@@ -2,6 +2,8 @@ import { Samples } from "../../../types";
 import AxisBounds from "../../chartConfig/AxisBounds";
 
 function linearRegressor(samples: Samples) {
+  const start_training_time = performance.now();
+
   // calculate mean of x and y
   let x_mean = 0;
   let y_mean = 0;
@@ -38,6 +40,8 @@ function linearRegressor(samples: Samples) {
 
   const axisBounds = new AxisBounds();
 
+  const inference_time = performance.now();
+
   for (const { x } of samples) {
     const y = calcY(x);
 
@@ -47,7 +51,12 @@ function linearRegressor(samples: Samples) {
     predictions.push({ x, y });
   }
 
-  return { predictions, axisBounds: axisBounds.axisBounds };
+  return {
+    predictions,
+    axisBounds: axisBounds.axisBounds,
+    trainingTime: +(performance.now() - start_training_time).toFixed(2),
+    inferenceTime: +(performance.now() - inference_time).toFixed(2),
+  };
 }
 
 export default linearRegressor;

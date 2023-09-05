@@ -126,12 +126,14 @@ class PolynomialRegressor {
   }
 
   gdFit() {
+    const training_start_time = performance.now();
+
     const rand_coefficients = [];
     for (let i = 1; i <= this.degree + 1; i++) rand_coefficients.push(1);
 
     let min_loss = Infinity;
     let min_loss_coefficients: number[] = [];
-    let min_loss_interation: number = 0;
+    // let min_loss_interation: number = 0;
 
     let current_coefficients: number[] = rand_coefficients;
 
@@ -141,24 +143,30 @@ class PolynomialRegressor {
 
       current_coefficients = updated_coefficients;
 
-      console.log("Iteration:", i, updated_coefficients, loss);
+      // console.log("Iteration:", i, updated_coefficients, loss);
 
       if (loss < min_loss) {
         min_loss = loss;
         min_loss_coefficients = updated_coefficients;
-        min_loss_interation = i;
+        // min_loss_interation = i;
       }
     }
 
-    console.log("min_loss_interation", min_loss_interation);
+    // console.log("min_loss_interation", min_loss_interation);
 
     this.coefficients = min_loss_coefficients;
     this.loss = min_loss;
 
-    return { coefficients: min_loss_coefficients, loss: min_loss };
+    return {
+      coefficients: min_loss_coefficients,
+      loss: min_loss,
+      trainingTime: +(performance.now() - training_start_time).toFixed(2),
+    };
   }
 
   predictSamples() {
+    const inferenceTime = performance.now();
+
     const predictions: Samples = [];
 
     const axisBounds = new AxisBounds();
@@ -173,7 +181,11 @@ class PolynomialRegressor {
       predictions.push({ x, y });
     }
 
-    return { predictions, axisBounds: axisBounds.axisBounds };
+    return {
+      predictions,
+      axisBounds: axisBounds.axisBounds,
+      inferenceTime: +(performance.now() - inferenceTime).toFixed(2),
+    };
   }
 }
 

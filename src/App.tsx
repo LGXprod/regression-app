@@ -36,24 +36,41 @@ function getAxisBounds(
 }
 
 function App() {
+  // menu state
   const [dataOption, setDataOption] = useState<FunctionType>("linear");
   const [polyDegree, setPolyDegree] = useState<number>(2);
+  const [isJavascript, setIsJavascript] = useState<boolean>(true);
+
+  // chart state
   const [randomSample, setRandomSample] = useState<{
-    samples: Samples;
+    trainingSet: Samples;
+    testSet: Samples;
     equation: string;
   }>();
   const [axisBounds, setAxisBounds] = useState<AxisBounds>();
+  const [executionTime, setExecutionTime] = useState<{
+    trainingTime: number;
+    inferenceTime: number;
+  }>();
   const [predictions, setPredictions] = useState<Samples>();
+  const [trainPercantage, setTrainPercentage] = useState<number>(80);
 
   useEffect(() => {
     const { axisBounds: sampleBounds, ...randomSample } = generateRandomSample(
-      ...defaultRandomArgs
+      ...defaultRandomArgs,
+      trainPercantage
     );
-    const { predictions, axisBounds: predictionBounds } = linearRegressor(
-      randomSample.samples
-    );
+    const {
+      predictions,
+      axisBounds: predictionBounds,
+      trainingTime,
+      inferenceTime,
+    } = linearRegressor(randomSample.trainingSet);
+
+    console.log(trainingTime);
 
     setRandomSample(randomSample);
+    setExecutionTime({ trainingTime, inferenceTime });
     setPredictions(predictions);
     setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
   }, []);
@@ -62,43 +79,58 @@ function App() {
     switch (dataOption) {
       case "linear": {
         const { axisBounds: sampleBounds, ...randomSample } =
-          generateRandomSample(...defaultRandomArgs);
-        const { predictions, axisBounds: predictionBounds } = linearRegressor(
-          randomSample.samples
-        );
+          generateRandomSample(...defaultRandomArgs, trainPercantage);
+        const {
+          predictions,
+          axisBounds: predictionBounds,
+          trainingTime,
+          inferenceTime,
+        } = linearRegressor(randomSample.trainingSet);
 
         setRandomSample(randomSample);
+        setExecutionTime({ trainingTime, inferenceTime });
         setPredictions(predictions);
+
         setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
         break;
       }
 
       case "polynomial": {
         const { axisBounds: sampleBounds, ...randomSample } =
-          generateRandomSample(...defaultRandomArgs, "polynomial", polyDegree);
+          generateRandomSample(
+            ...defaultRandomArgs,
+            trainPercantage,
+            "polynomial",
+            polyDegree
+          );
 
         setRandomSample(randomSample);
 
         const polynomialRegressor = new PolynomialRegressor(
-          randomSample.samples,
+          randomSample.trainingSet,
           polyDegree,
           0.001,
           10000
         );
 
-        const { coefficients, loss } = polynomialRegressor.gdFit();
+        const { coefficients, loss, trainingTime } =
+          polynomialRegressor.gdFit();
         console.log(coefficients, loss);
 
-        const { predictions, axisBounds: predictionBounds } =
-          polynomialRegressor.predictSamples();
+        const {
+          predictions,
+          axisBounds: predictionBounds,
+          inferenceTime,
+        } = polynomialRegressor.predictSamples();
 
+        setExecutionTime({ trainingTime, inferenceTime });
         setPredictions(predictions);
         setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
 
         break;
       }
     }
-  }, [dataOption, polyDegree]);
+  }, [dataOption, polyDegree, trainPercantage]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto max-w-7xl">
@@ -111,8 +143,22 @@ function App() {
         yourself!
       </p>
 
-      <div className="flex items-center justify-center gap-4">
+      <div className="w-full flex items-center justify-center gap-4">
+        <input
+          type="radio"
+          checked={isJavascript}
+          onChange={() => setIsJavascript(true)}
+        />
+        <label>Javascript</label>
+        <input
+          type="radio"
+          checked={!isJavascript}
+          onChange={() => setIsJavascript(!true)}
+        />
+        <label>Rust</label>
+
         <select
+          className="border-2 rounded-md px-1 py-0.5 max-w-[150px]"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
             setDataOption(e.target.value as FunctionType)
           }
@@ -137,6 +183,32 @@ function App() {
             />
           </>
         )}
+
+        <label>Train/Test Split:</label>
+
+        <input
+          className="w-[75px]"
+          placeholder="Train"
+          type="number"
+          min={20}
+          max={80}
+          value={trainPercantage}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setTrainPercentage(parseInt(e.target.value))
+          }
+        />
+        <label>/</label>
+        <input
+          className="w-[75px]"
+          placeholder="Test"
+          type="number"
+          min={20}
+          max={80}
+          value={Math.abs(100 - trainPercantage)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setTrainPercentage(Math.abs(100 - parseInt(e.target.value)))
+          }
+        />
       </div>
 
       <div className="chart-container w-full h-full">
@@ -201,11 +273,14 @@ function App() {
                 datasets: [
                   {
                     label: "Random Samples",
-                    data: randomSample.samples,
+                    data: randomSample.testSet,
                     backgroundColor: "#48BFE3",
                   },
                   {
-                    label: "OLS Linear Regression",
+                    label:
+                      dataOption === "polynomial"
+                        ? "Polynomial Regression"
+                        : "Linear Regression",
                     data: predictions,
                     backgroundColor: "#F72585",
                     tension: 0.4,
@@ -221,6 +296,20 @@ function App() {
             <h3 className="text-xl text-center mt-4">
               Data modelled using: {randomSample.equation}
             </h3>
+
+            {executionTime && (
+              <>
+                <h4 className="text-base text-center mt-4">
+                  Training Time: {executionTime.trainingTime > 0.01 ? executionTime.trainingTime : "Less than 0.01"}{" "}
+                  Milliseconds
+                </h4>
+
+                <h4 className="text-base text-center mt-4">
+                  Inference Time: {executionTime.inferenceTime > 0.01 ? executionTime.inferenceTime : "Less than 0.01"}{" "}
+                  Milliseconds
+                </h4>
+              </>
+            )}
           </>
         )}
       </div>

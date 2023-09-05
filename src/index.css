@@ -71,6 +71,7 @@ body {
 h1,
 h2,
 h3,
+h4,
 p,
 label,
 input {
@@ -89,7 +90,7 @@ input {
   color: #222831;
   outline: none;
   border-color: #393e46;
-  @apply border-4 border-r-4;
+  @apply border-2 rounded-md max-w-[75px] px-1 py-0.5;
 }
 
 input:focus {

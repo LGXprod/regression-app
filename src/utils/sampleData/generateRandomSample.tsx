@@ -8,6 +8,7 @@ function generateRandomSample(
   min_val: number,
   max_val: number,
   num_samples: number,
+  trainingPercentage: number,
   function_type: FunctionType = "linear",
   degree: number = 2
 ) {
@@ -52,8 +53,22 @@ function generateRandomSample(
 
   samples.sort((a, b) => a.x - b.x);
 
+  const testSet = [];
+  const testPercentage = Math.abs(100 - trainingPercentage);
+  let testSetSize = Math.floor((testPercentage / 100) * num_samples);
+
+  while (testSetSize > 0) {
+    const randomIndex = getRandomInteger(0, samples.length - 1);
+    const randomSample = samples.splice(randomIndex, 1)[0];
+    testSet.push(randomSample);
+    testSetSize--;
+  }
+
+  testSet.sort((a, b) => a.x - b.x);
+
   return {
-    samples,
+    trainingSet: samples,
+    testSet,
     equation: yFunc.toString(),
     axisBounds: axisBounds.axisBounds,
   };
