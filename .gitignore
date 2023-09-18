@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+regressor-rs/pkg/
+regressor-rs/target/

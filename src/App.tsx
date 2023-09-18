@@ -2,6 +2,7 @@ import generateRandomSample from "./utils/sampleData/generateRandomSample";
 import { AxisBounds, FunctionType, Samples } from "./types";
 import { Chart } from "react-chartjs-2";
 import linearRegressor from "./utils/regressors/native/linearRegressor";
+import init, { linear_regressor as rustLinearRegressor } from "regressor-rs";
 import { useEffect, useState } from "react";
 import PolynomialRegressor from "./utils/regressors/native/polynomialRegressor";
 
@@ -67,7 +68,17 @@ function App() {
       inferenceTime,
     } = linearRegressor(randomSample.trainingSet);
 
-    console.log(trainingTime);
+    init().then(() => {
+      const rs_predictions = rustLinearRegressor(
+        new Float64Array(randomSample.trainingSet.map(({ x }) => x)),
+        new Float64Array(randomSample.trainingSet.map(({ y }) => y))
+      );
+
+      console.log(
+        "rust",
+        rs_predictions.get_sample(0)
+      );
+    });
 
     setRandomSample(randomSample);
     setExecutionTime({ trainingTime, inferenceTime });
