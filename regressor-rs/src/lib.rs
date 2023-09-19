@@ -61,15 +61,26 @@ impl AxisBounds {
 }
 
 #[wasm_bindgen]
-pub struct Result {
-    predictions: Vec<Sample>,
+pub struct RegressorResult {
+    predictions: Vec<f64>,
     axis_bounds: AxisBounds,
     // training_time: u128,
     // inference_time: u128,
 }
 
 #[wasm_bindgen]
-pub fn linear_regressor(x_samples: Vec<f64>, y_samples: Vec<f64>) -> SampleVec {
+impl RegressorResult {
+    pub fn get_predictions(self) -> Vec<f64> {
+        self.predictions
+    }
+
+    pub fn get_axis_bounds(self) -> AxisBounds {
+        self.axis_bounds
+    }
+}
+
+#[wasm_bindgen]
+pub fn linear_regressor(x_samples: Vec<f64>, y_samples: Vec<f64>) -> RegressorResult {
     let samples: Vec<(f64, f64)> = zip(x_samples, y_samples).collect();
 
     // let training_set_time = Instant::now();
@@ -102,55 +113,46 @@ pub fn linear_regressor(x_samples: Vec<f64>, y_samples: Vec<f64>) -> SampleVec {
 
     // let inference_start_time = Instant::now();
 
-    let mut predictions: Vec<Sample> = Vec::new();
+    let mut predictions: Vec<f64> = Vec::new();
     let mut axis_bounds = AxisBounds::new();
 
     for (x, y) in &samples {
         axis_bounds.add_sample(*x, *y);
 
-        predictions.push(Sample {
-            x: (*x).into(),
-            y: (gradient * (*x) + y_intercept).into(),
-        });
+        predictions.push((gradient * x + y_intercept).into());
     }
 
-    SampleVec(predictions)
+    // SampleVec(predictions)
 
-    // Result {
-    //     predictions,
-    //     axis_bounds,
-    //     // training_time,
-    //     // inference_time: inference_start_time.elapsed().as_millis(),
-    // }
+    RegressorResult {
+        predictions,
+        axis_bounds,
+        // training_time,
+        // inference_time: inference_start_time.elapsed().as_millis(),
+    }
 }
 
 #[test]
 fn linear_regressor_test() {
-    let x = vec![3.4, -2.1, 5.0, 10.0, -6.1];
-    let y = vec![9.8, -1.2, 13.0, 23.0, -9.2];
+    let x_samples = vec![3.4, -2.1, 5.0, 10.0, -6.1];
+    let y_samples = vec![9.8, -1.2, 13.0, 23.0, -9.2];
 
-    let predictions = linear_regressor(x.clone(), y.clone()).predictions;
-    let samples: Vec<(f64, f64)> = zip(x, y).collect();
-    let mut ground_truth: Vec<Sample> = Vec::new();
-
-    for (x, y) in &samples {
-        ground_truth.push(Sample { x: *x, y: *y });
-    }
+    let predictions = linear_regressor(x_samples.clone(), y_samples.clone()).predictions;
 
     assert_eq!(
-        ground_truth.len(),
+        y_samples.len(),
         predictions.len(),
         "Arrays don't have the same length"
     );
 
-    println!("{:?}", ground_truth);
+    println!("{:?}", y_samples);
     println!("{:?}", predictions);
 
     assert!(
-        ground_truth
+        y_samples
             .iter()
             .zip(predictions.iter())
-            .all(|(a, b)| a.x.abs() - b.x.abs() < 0.0001 && a.y.abs() - b.y.abs() < 0.0001),
+            .all(|(a, b)| a.abs() - b.abs() < 0.0001),
         "Arrays are not equal"
     );
 }

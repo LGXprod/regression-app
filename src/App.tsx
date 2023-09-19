@@ -74,15 +74,27 @@ function App() {
         new Float64Array(randomSample.trainingSet.map(({ y }) => y))
       );
 
-      console.log(
-        "rust",
-        rs_predictions.get_sample(0)
-      );
+      // console.log(
+      //   "rust",
+      //   rs_predictions.get_predictions()
+      // );
+
+      const preds = rs_predictions.get_predictions();
+      const prediction_samples: Samples = [];
+
+      preds.forEach((y, i) => {
+        prediction_samples.push({
+          x: randomSample.testSet[i].x,
+          y,
+        });
+      });
+
+      setPredictions(prediction_samples);
     });
 
     setRandomSample(randomSample);
     setExecutionTime({ trainingTime, inferenceTime });
-    setPredictions(predictions);
+    // setPredictions(predictions);
     setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
   }, []);
 
@@ -161,6 +173,12 @@ function App() {
           onChange={() => setIsJavascript(true)}
         />
         <label>Javascript</label>
+        <input
+          type="radio"
+          checked={!isJavascript}
+          onChange={() => setIsJavascript(!true)}
+        />
+        <label>Golang</label>
         <input
           type="radio"
           checked={!isJavascript}
@@ -311,12 +329,18 @@ function App() {
             {executionTime && (
               <>
                 <h4 className="text-base text-center mt-4">
-                  Training Time: {executionTime.trainingTime > 0.01 ? executionTime.trainingTime : "Less than 0.01"}{" "}
+                  Training Time:{" "}
+                  {executionTime.trainingTime > 0.01
+                    ? executionTime.trainingTime
+                    : "Less than 0.01"}{" "}
                   Milliseconds
                 </h4>
 
                 <h4 className="text-base text-center mt-4">
-                  Inference Time: {executionTime.inferenceTime > 0.01 ? executionTime.inferenceTime : "Less than 0.01"}{" "}
+                  Inference Time:{" "}
+                  {executionTime.inferenceTime > 0.01
+                    ? executionTime.inferenceTime
+                    : "Less than 0.01"}{" "}
                   Milliseconds
                 </h4>
               </>
