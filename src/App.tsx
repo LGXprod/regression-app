@@ -156,9 +156,9 @@ function App() {
   }, [dataOption, polyDegree, trainPercantage]);
 
   return (
-    <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto max-w-7xl">
-      <h1 className="text-6xl">Regressor.io</h1>
-      <p className="text-center">
+    <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
+      <h1 className="text-6xl">Regressor.io 📈</h1>
+      <p className="text-center max-w-7xl">
         Are you struggling to make sense of your data? Look no further than
         regressor.io! Our advanced algorithms make it simple to model your data
         and see the patterns that matter most. With regressor.io, you'll never
@@ -240,113 +240,142 @@ function App() {
         />
       </div>
 
-      <div className="chart-container w-full h-full">
-        <h2 className="text-4xl text-center mb-4">
-          {((): string => {
-            switch (dataOption) {
-              case "linear": {
-                return "Linear Data";
-              }
+      <div className="flex items-center justify-center gap-10 max-w-screen-2xl w-full h-full">
+        <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl max-w-5xl w-full h-full">
+          <h2 className="text-4xl text-center mb-4">
+            {((): string => {
+              switch (dataOption) {
+                case "linear": {
+                  return "Linear Data";
+                }
 
-              case "polynomial": {
-                return `Polynomial Data (Degree ${polyDegree})`;
-              }
+                case "polynomial": {
+                  return `Polynomial Data (Degree ${polyDegree})`;
+                }
 
-              case "non-linear": {
-                return "Non-linear Data";
-              }
+                case "non-linear": {
+                  return "Non-linear Data";
+                }
 
-              case "random": {
-                return "Random Data";
+                case "random": {
+                  return "Random Data";
+                }
               }
-            }
-          })()}
-        </h2>
+            })()}
+          </h2>
 
-        {randomSample && axisBounds && predictions && (
-          <>
-            <Chart
-              type="scatter"
-              options={{
-                scales: {
-                  x: {
-                    min: axisBounds.mins.x,
-                    max: axisBounds.maxs.x,
-                    title: {
-                      text: "X Samples",
-                      display: true,
-                      color: "#EEEEEE",
+          {randomSample && axisBounds && predictions && (
+            <>
+              <Chart
+                type="scatter"
+                options={{
+                  scales: {
+                    x: {
+                      min: axisBounds.mins.x,
+                      max: axisBounds.maxs.x,
+                      title: {
+                        text: "X Samples",
+                        display: true,
+                        color: "#EEEEEE",
+                      },
+                      ...chartScaleOptions,
                     },
-                    ...chartScaleOptions,
-                  },
-                  y: {
-                    min: axisBounds.mins.y,
-                    max: axisBounds.maxs.y,
-                    title: {
-                      text: "Y = F(X)",
-                      display: true,
-                      color: "#EEEEEE",
-                    },
-                    ...chartScaleOptions,
-                  },
-                },
-                plugins: {
-                  legend: {
-                    labels: {
-                      color: "#EEEEEE",
+                    y: {
+                      min: axisBounds.mins.y,
+                      max: axisBounds.maxs.y,
+                      title: {
+                        text: "Y = F(X)",
+                        display: true,
+                        color: "#EEEEEE",
+                      },
+                      ...chartScaleOptions,
                     },
                   },
-                },
-              }}
-              data={{
-                datasets: [
-                  {
-                    label: "Random Samples",
-                    data: randomSample.testSet,
-                    backgroundColor: "#48BFE3",
+                  plugins: {
+                    legend: {
+                      labels: {
+                        color: "#EEEEEE",
+                      },
+                    },
                   },
-                  {
-                    label:
-                      dataOption === "polynomial"
-                        ? "Polynomial Regression"
-                        : "Linear Regression",
-                    data: predictions,
-                    backgroundColor: "#F72585",
-                    tension: 0.4,
-                    borderColor: "#F72585",
-                    borderWidth: 4,
-                    type: "line" as const,
-                    pointRadius: 0,
-                  },
-                ],
-              }}
-            />
+                }}
+                data={{
+                  datasets: [
+                    {
+                      label: "Random Samples",
+                      data: randomSample.testSet,
+                      backgroundColor: "#48BFE3",
+                    },
+                    {
+                      label:
+                        dataOption === "polynomial"
+                          ? "Polynomial Regression"
+                          : "Linear Regression",
+                      data: predictions,
+                      backgroundColor: "#F72585",
+                      tension: 0.4,
+                      borderColor: "#F72585",
+                      borderWidth: 4,
+                      type: "line" as const,
+                      pointRadius: 0,
+                    },
+                  ],
+                }}
+              />
 
-            <h3 className="text-xl text-center mt-4">
-              Data modelled using: {randomSample.equation}
-            </h3>
+              <h3 className="text-xl text-center mt-4">
+                Data modelled using: {randomSample.equation}
+              </h3>
+            </>
+          )}
+        </div>
 
+        <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl">
+          <h2 className="text-4xl text-center mb-4">Regression Metrics</h2>
+
+          <h3 className="text-xl mt-4 mb-2">Training Metrics</h3>
+
+          <div className="grid grid-cols-2">
+            <p>Accuracy: x%</p>
+            <p>Loss: x</p>
+
+            <div></div>
             {executionTime && (
-              <>
-                <h4 className="text-base text-center mt-4">
-                  Training Time:{" "}
-                  {executionTime.trainingTime > 0.01
-                    ? executionTime.trainingTime
-                    : "Less than 0.01"}{" "}
-                  Milliseconds
-                </h4>
-
-                <h4 className="text-base text-center mt-4">
-                  Inference Time:{" "}
-                  {executionTime.inferenceTime > 0.01
-                    ? executionTime.inferenceTime
-                    : "Less than 0.01"}{" "}
-                  Milliseconds
-                </h4>
-              </>
+              <p>
+                Execution Time:{" "}
+                {executionTime.trainingTime > 0.01
+                  ? executionTime.trainingTime
+                  : "≤ 0.01"}{" "}
+                ms
+              </p>
             )}
-          </>
-        )}
+          </div>
+
+          <hr className="mt-4" />
+
+          <h3 className="text-xl mt-4 mb-2">Testing Metrics</h3>
+
+          <div className="grid grid-cols-2">
+            <p>Accuracy: x%</p>
+            <p>F1 Score: x%</p>
+
+            <p>MAE Loss: x</p>
+            <p>MSE Loss: x</p>
+
+            <p>
+              R<sup>2</sup> Score: x
+            </p>
+            {executionTime && (
+              <p>
+                Execution Time:{" "}
+                {executionTime.inferenceTime > 0.01
+                  ? executionTime.inferenceTime
+                  : "≤ 0.01"}{" "}
+                ms
+              </p>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
