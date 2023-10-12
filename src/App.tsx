@@ -1,5 +1,5 @@
 import generateRandomSample from "./utils/sampleData/generateRandomSample";
-import { AxisBounds, FunctionType, Samples } from "./types";
+import { AxisBounds, FunctionType, ProgLang, Samples } from "./types";
 import { Chart } from "react-chartjs-2";
 import linearRegressor from "./utils/regressors/native/linearRegressor";
 import init, { linear_regressor as rustLinearRegressor } from "regressor-rs";
@@ -40,7 +40,7 @@ function App() {
   // menu state
   const [dataOption, setDataOption] = useState<FunctionType>("linear");
   const [polyDegree, setPolyDegree] = useState<number>(2);
-  const [isJavascript, setIsJavascript] = useState<boolean>(true);
+  const [progLang, setProgLang] = useState<ProgLang>("Javascript");
 
   // chart state
   const [randomSample, setRandomSample] = useState<{
@@ -169,20 +169,20 @@ function App() {
       <div className="w-full flex items-center justify-center gap-4">
         <input
           type="radio"
-          checked={isJavascript}
-          onChange={() => setIsJavascript(true)}
+          checked={progLang === "Javascript"}
+          onChange={() => setProgLang("Javascript")}
         />
         <label>Javascript</label>
         <input
           type="radio"
-          checked={!isJavascript}
-          onChange={() => setIsJavascript(!true)}
+          checked={progLang === "Golang"}
+          onChange={() => setProgLang("Golang")}
         />
         <label>Golang</label>
         <input
           type="radio"
-          checked={!isJavascript}
-          onChange={() => setIsJavascript(!true)}
+          checked={progLang === "Rust"}
+          onChange={() => setProgLang("Rust")}
         />
         <label>Rust</label>
 
