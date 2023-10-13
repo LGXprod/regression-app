@@ -13,22 +13,20 @@ h4,
 p,
 label,
 input {
-  color: #eeeeee;
+  @apply text-slate-50;
 }
 
 select,
 option {
-  background-color: #eeeeee;
   color: #222831;
-  @apply border-r-2 max-w-[500px] w-full;
+  @apply bg-slate-50 border-r-2 max-w-[500px] w-full;
 }
 
 input {
-  background-color: #eeeeee;
   color: #222831;
   outline: none;
   border-color: #393e46;
-  @apply border-2 rounded-md max-w-[75px] px-1 py-0.5;
+  @apply bg-slate-50 border-2 rounded-md max-w-[75px] px-1 py-0.5;
 }
 
 input:focus {
