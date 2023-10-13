@@ -54,9 +54,18 @@ function App() {
     inferenceTime: number;
   }>();
   const [predictions, setPredictions] = useState<Samples>();
+  const [testLossMetrics, setTestLossMetrics] = useState<{
+    mae: number;
+    mse: number;
+    rmsle: number;
+    r2score: number;
+    ev: number;
+  }>();
+  const [trainLoss, setTrainLoss] = useState<number | null>();
   const [trainPercantage, setTrainPercentage] = useState<number>(80);
+  const [toggleRefresh, setToggleRefresh] = useState<boolean>(false);
 
-  useEffect(() => {
+  function updateLinearRegression() {
     const { axisBounds: sampleBounds, ...randomSample } = generateRandomSample(
       ...defaultRandomArgs,
       trainPercantage
@@ -66,55 +75,23 @@ function App() {
       axisBounds: predictionBounds,
       trainingTime,
       inferenceTime,
-    } = linearRegressor(randomSample.trainingSet);
-
-    init().then(() => {
-      const rs_predictions = rustLinearRegressor(
-        new Float64Array(randomSample.trainingSet.map(({ x }) => x)),
-        new Float64Array(randomSample.trainingSet.map(({ y }) => y))
-      );
-
-      // console.log(
-      //   "rust",
-      //   rs_predictions.get_predictions()
-      // );
-
-      const preds = rs_predictions.get_predictions();
-      const prediction_samples: Samples = [];
-
-      preds.forEach((y, i) => {
-        prediction_samples.push({
-          x: randomSample.testSet[i].x,
-          y,
-        });
-      });
-
-      setPredictions(prediction_samples);
-    });
+      testLoss,
+    } = linearRegressor(randomSample.trainingSet, randomSample.testSet);
 
     setRandomSample(randomSample);
     setExecutionTime({ trainingTime, inferenceTime });
-    // setPredictions(predictions);
+    setPredictions(predictions);
+    setTrainLoss(null);
+    setTestLossMetrics(testLoss);
     setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
-  }, []);
+  }
+
+  useEffect(() => updateLinearRegression, []);
 
   useEffect(() => {
     switch (dataOption) {
       case "linear": {
-        const { axisBounds: sampleBounds, ...randomSample } =
-          generateRandomSample(...defaultRandomArgs, trainPercantage);
-        const {
-          predictions,
-          axisBounds: predictionBounds,
-          trainingTime,
-          inferenceTime,
-        } = linearRegressor(randomSample.trainingSet);
-
-        setRandomSample(randomSample);
-        setExecutionTime({ trainingTime, inferenceTime });
-        setPredictions(predictions);
-
-        setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
+        updateLinearRegression();
         break;
       }
 
@@ -140,20 +117,24 @@ function App() {
           polynomialRegressor.gdFit();
         console.log(coefficients, loss);
 
+        setTrainLoss(Math.round(loss * 100) / 100);
+
         const {
           predictions,
           axisBounds: predictionBounds,
           inferenceTime,
-        } = polynomialRegressor.predictSamples();
+          testLoss,
+        } = polynomialRegressor.predictSamples(randomSample.testSet);
 
         setExecutionTime({ trainingTime, inferenceTime });
         setPredictions(predictions);
+        setTestLossMetrics(testLoss);
         setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
 
         break;
       }
     }
-  }, [dataOption, polyDegree, trainPercantage]);
+  }, [toggleRefresh, dataOption, polyDegree, trainPercantage]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
@@ -238,6 +219,13 @@ function App() {
             setTrainPercentage(Math.abs(100 - parseInt(e.target.value)))
           }
         />
+
+        <button
+          className="bg-indigo-500 hover:bg-indigo-400 text-slate-50 py-2 px-4 rounded-md"
+          onClick={() => setToggleRefresh(!toggleRefresh)}
+        >
+          Refresh
+        </button>
       </div>
 
       <div className="flex items-center justify-center gap-10 max-w-screen-2xl w-full h-full">
@@ -335,11 +323,9 @@ function App() {
 
           <h3 className="text-xl mt-4 mb-2">Training Metrics</h3>
 
-          <div className="grid grid-cols-2">
-            <p>Accuracy: x%</p>
-            <p>Loss: x</p>
+          <div className="grid grid-cols-2 gap-x-4">
+            <p>MSE Loss: {trainLoss ? trainLoss : "NA"}</p>
 
-            <div></div>
             {executionTime && (
               <p>
                 Execution Time:{" "}
@@ -355,16 +341,16 @@ function App() {
 
           <h3 className="text-xl mt-4 mb-2">Testing Metrics</h3>
 
-          <div className="grid grid-cols-2">
-            <p>Accuracy: x%</p>
-            <p>F1 Score: x%</p>
-
-            <p>MAE Loss: x</p>
-            <p>MSE Loss: x</p>
-
+          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+            <p>MAE Loss: {testLossMetrics && testLossMetrics.mae}</p>
             <p>
-              R<sup>2</sup> Score: x
+              R<sup>2</sup> Score: {testLossMetrics && testLossMetrics.r2score}
             </p>
+
+            <p>MSE Loss: {testLossMetrics && testLossMetrics.mse}</p>
+            <p>RMSLE Loss: {testLossMetrics && testLossMetrics.rmsle}</p>
+
+            <p>EV: {testLossMetrics && testLossMetrics.ev}</p>
             {executionTime && (
               <p>
                 Execution Time:{" "}
@@ -382,3 +368,27 @@ function App() {
 }
 
 export default App;
+
+// init().then(() => {
+//   const rs_predictions = rustLinearRegressor(
+//     new Float64Array(randomSample.trainingSet.map(({ x }) => x)),
+//     new Float64Array(randomSample.trainingSet.map(({ y }) => y))
+//   );
+
+//   // console.log(
+//   //   "rust",
+//   //   rs_predictions.get_predictions()
+//   // );
+
+//   const preds = rs_predictions.get_predictions();
+//   const prediction_samples: Samples = [];
+
+//   preds.forEach((y, i) => {
+//     prediction_samples.push({
+//       x: randomSample.testSet[i].x,
+//       y,
+//     });
+//   });
+
+//   setPredictions(prediction_samples);
+// });
