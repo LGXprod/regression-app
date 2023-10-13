@@ -1,5 +1,6 @@
 import { Samples } from "../../../types";
 import AxisBounds from "../../chartConfig/AxisBounds";
+import Loss from "./loss";
 
 class PolynomialRegressor {
   degree: number;
@@ -164,25 +165,29 @@ class PolynomialRegressor {
     };
   }
 
-  predictSamples() {
+  predictSamples(testSet: Samples) {
     const inferenceTime = performance.now();
 
     const predictions: Samples = [];
-
     const axisBounds = new AxisBounds();
 
-    for (const x_norm of this.x_train) {
-      const x = this.x_norm_to_x[x_norm];
-      const y = this.calcY(this.coefficients, x_norm);
+    const loss = new Loss();
+
+    for (const { x, y } of testSet) {
+      const x_norm = this.normalize(x);
+      const y_pred = this.calcY(this.coefficients, x_norm);
+
+      loss.addResidual(y, y_pred);
 
       axisBounds.addX(x);
-      axisBounds.addY(y);
+      axisBounds.addY(y_pred);
 
-      predictions.push({ x, y });
+      predictions.push({ x, y: y_pred });
     }
 
     return {
       predictions,
+      testLoss: loss.getLossMetrics(),
       axisBounds: axisBounds.axisBounds,
       inferenceTime: +(performance.now() - inferenceTime).toFixed(2),
     };
