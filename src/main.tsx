@@ -10,9 +10,17 @@ import {
   LineElement,
   Tooltip,
   Legend,
+  CategoryScale,
 } from "chart.js";
 
-ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
+ChartJS.register(
+  LinearScale,
+  PointElement,
+  LineElement,
+  CategoryScale,
+  Tooltip,
+  Legend
+);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
