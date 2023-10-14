@@ -1,5 +1,6 @@
 import { Samples } from "../../../types";
 import AxisBounds from "../../chartConfig/AxisBounds";
+import Equation from "../../chartConfig/Equation";
 import Loss from "./loss";
 
 class PolynomialRegressor {
@@ -90,10 +91,6 @@ class PolynomialRegressor {
       const y = this.y_train[i];
       const y_pred = this.calcY(coefficients, x);
 
-      // if (i == "1") {
-      //   console.log(x, y, y_pred);
-      // }
-
       y_predictions.push(y_pred);
 
       gradient_sums[0] += y - y_pred; // updating gradient sum for w0
@@ -134,7 +131,6 @@ class PolynomialRegressor {
 
     let min_loss = Infinity;
     let min_loss_coefficients: number[] = [];
-    // let min_loss_interation: number = 0;
 
     let current_coefficients: number[] = rand_coefficients;
 
@@ -144,22 +140,25 @@ class PolynomialRegressor {
 
       current_coefficients = updated_coefficients;
 
-      // console.log("Iteration:", i, updated_coefficients, loss);
-
       if (loss < min_loss) {
         min_loss = loss;
         min_loss_coefficients = updated_coefficients;
-        // min_loss_interation = i;
       }
     }
-
-    // console.log("min_loss_interation", min_loss_interation);
 
     this.coefficients = min_loss_coefficients;
     this.loss = min_loss;
 
+    const equation = new Equation();
+
+    for (let i = 0; i < min_loss_coefficients.length; i++)
+      equation.addTerm(min_loss_coefficients[i], i);
+
     return {
       coefficients: min_loss_coefficients,
+      equation: equation.getEquationString(),
+      normMean: Math.round(this.x_mean * 100) / 100,
+      normStd: Math.round(this.x_std * 100) / 100,
       loss: min_loss,
       trainingTime: +(performance.now() - training_start_time).toFixed(2),
     };

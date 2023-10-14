@@ -11,8 +11,6 @@ class PolynomialFunction implements YFunction {
     for (let i = 1; i <= degree + 1; i++) {
       this.coefficients.push(getRandomFloat(-3, 3));
     }
-
-    console.log("coefficients", this.coefficients);
   }
 
   calcY(x: number) {

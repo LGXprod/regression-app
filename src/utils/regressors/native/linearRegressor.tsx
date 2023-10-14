@@ -1,5 +1,6 @@
 import { Samples } from "../../../types";
 import AxisBounds from "../../chartConfig/AxisBounds";
+import Equation from "../../chartConfig/Equation";
 import Loss from "./loss";
 
 function linearRegressor(trainSet: Samples, testSet: Samples) {
@@ -28,10 +29,14 @@ function linearRegressor(trainSet: Samples, testSet: Samples) {
     x_mean_diff_squared += x_mean_diff * x_mean_diff;
   }
 
+  const equation = new Equation();
+
   const m = x_y_mean_diff_product / x_mean_diff_squared;
+  equation.addTerm(m, 1);
 
   // calculate b (y-intercept)
   const b = y_mean - m * x_mean;
+  equation.addTerm(b, 0);
 
   const predictions: Samples = [];
 
@@ -57,6 +62,7 @@ function linearRegressor(trainSet: Samples, testSet: Samples) {
 
   return {
     predictions,
+    regressionEquation: equation.getEquationString(),
     testLoss: loss.getLossMetrics(),
     axisBounds: axisBounds.axisBounds,
     trainingTime: +(performance.now() - start_training_time).toFixed(2),

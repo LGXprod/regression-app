@@ -1,12 +1,17 @@
+import { simplify } from "mathjs";
+import { ComputeEngine } from "@cortex-js/compute-engine";
+
 class Equation {
-  terms: { coefficient: number; exponent: number; }[];
+  terms: { coefficient: number; exponent: number }[];
   independentVar: string;
   dependentVar: string;
+  isMultiplySymbol: boolean;
 
-  constructor(independentVar: string = "x", dependentVar: string = "y") {
+  constructor(isMultiplySymbol: boolean = false, independentVar: string = "x", dependentVar: string = "y") {
     this.terms = [];
     this.independentVar = independentVar;
     this.dependentVar = dependentVar;
+    this.isMultiplySymbol = isMultiplySymbol;
   }
 
   addTerm(coefficient: number, exponent: number) {
@@ -17,26 +22,42 @@ class Equation {
     this.terms.push({ coefficient, exponent });
   }
 
-  // get simplified() {
-  //   const simplifiedTerms = [];
+  getEquationString() {
+    this.terms.sort((a, b) => b.exponent - a.exponent);
 
-  //   let prevIsNegative = true;
+    let equationString = "";
 
-  //   for (const [i, { coefficient, exponent }] of this.terms.entries()) {
-  //     const isNegative = coefficient < 0;
-  //     let updated_coefficient = coefficient;
+    for (const [i, term] of this.terms.entries()) {
+      const { coefficient, exponent } = term;
 
-  //     if (i === 0 && isNegative) updated_coefficient = -coefficient;
-  //     if (prevIsNegative && isNegative) updated_coefficient = -coefficient;
+      if (coefficient === 0) {
+        continue;
+      }
 
-  //     simplifiedTerms.push({updated_coefficient, exponent});
+      if (i > 0 && coefficient > 0) {
+        equationString += " + ";
+      }
 
-  //     prevIsNegative = isNegative;
-  //   }
+      if (coefficient < 0) {
+        equationString += " -";
+        if (i > 0) equationString += " ";
+      }
 
-  //   return simplifiedTerms;
-  // }
+      equationString += Math.round(Math.abs(coefficient) * 10000) / 10000;
 
+      if (exponent > 0) {
+        equationString += this.independentVar;
+
+        if (exponent > 1) {
+          equationString += "^" + exponent;
+        }
+      }
+    }
+
+    equationString = `${this.dependentVar} = ${equationString}`
+
+    return equationString;
+  }
 }
 
 export default Equation;

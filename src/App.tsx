@@ -2,7 +2,7 @@ import generateRandomSample from "./utils/sampleData/generateRandomSample";
 import { AxisBounds, FunctionType, ProgLang, Samples } from "./types";
 import { Chart } from "react-chartjs-2";
 import linearRegressor from "./utils/regressors/native/linearRegressor";
-import init, { linear_regressor as rustLinearRegressor } from "regressor-rs";
+// import init, { linear_regressor as rustLinearRegressor } from "regressor-rs";
 import { useEffect, useState } from "react";
 import PolynomialRegressor from "./utils/regressors/native/polynomialRegressor";
 
@@ -53,6 +53,8 @@ function App() {
     trainingTime: number;
     inferenceTime: number;
   }>();
+  const [regressionEquation, setRegressionEquation] = useState<string>();
+  const [norm, setNorm] = useState<{ mean: number; std: number } | null>();
   const [predictions, setPredictions] = useState<Samples>();
   const [testLossMetrics, setTestLossMetrics] = useState<{
     mae: number;
@@ -72,6 +74,7 @@ function App() {
     );
     const {
       predictions,
+      regressionEquation,
       axisBounds: predictionBounds,
       trainingTime,
       inferenceTime,
@@ -80,6 +83,8 @@ function App() {
 
     setRandomSample(randomSample);
     setExecutionTime({ trainingTime, inferenceTime });
+    setRegressionEquation(regressionEquation);
+    setNorm(null);
     setPredictions(predictions);
     setTrainLoss(null);
     setTestLossMetrics(testLoss);
@@ -113,10 +118,16 @@ function App() {
           10000
         );
 
-        const { coefficients, loss, trainingTime } =
-          polynomialRegressor.gdFit();
-        console.log(coefficients, loss);
+        const {
+          equation,
+          normMean,
+          normStd,
+          loss,
+          trainingTime,
+        } = polynomialRegressor.gdFit();
 
+        setRegressionEquation(equation);
+        setNorm({ mean: normMean, std: normStd });
         setTrainLoss(Math.round(loss * 100) / 100);
 
         const {
@@ -234,7 +245,7 @@ function App() {
             {((): string => {
               switch (dataOption) {
                 case "linear": {
-                  return "Linear Data";
+                  return `Linear Regression`;
                 }
 
                 case "polynomial": {
@@ -251,6 +262,11 @@ function App() {
               }
             })()}
           </h2>
+
+          <h3 className="text-center text-xl">
+            {`${regressionEquation}`}
+            {norm && ` | Z(x) = (x - ${norm.mean}) / ${norm.std}`}
+          </h3>
 
           {randomSample && axisBounds && predictions && (
             <>
