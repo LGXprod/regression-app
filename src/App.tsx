@@ -149,11 +149,11 @@ function App() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
-      <h1 className="text-6xl">Regressor.io 📈</h1>
+      <h1 className="text-6xl">Regression ML 📈</h1>
       <p className="text-center max-w-7xl">
         Are you struggling to make sense of your data? Look no further than
-        regressor.io! Our advanced algorithms make it simple to model your data
-        and see the patterns that matter most. With regressor.io, you'll never
+        Regression ML! Our advanced algorithms make it simple to model your data
+        and see the patterns that matter most. With Regression ML, you'll never
         have to guess again. Try it out today and see the difference for
         yourself!
       </p>
@@ -265,7 +265,7 @@ function App() {
 
           <h3 className="text-center text-xl">
             {`${regressionEquation}`}
-            {norm && ` | Z(x) = (x - ${norm.mean}) / ${norm.std}`}
+            {norm && ` | Z(x) = (x - (${norm.mean})) / ${norm.std}`}
           </h3>
 
           {randomSample && axisBounds && predictions && (
