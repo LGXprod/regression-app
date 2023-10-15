@@ -26,7 +26,7 @@ class Loss {
   }
 
   calcRmsle() {
-    return Math.log(this.calcMse());
+    return Math.log(Math.sqrt(this.calcMse()));
   }
 
   calcMean(nums: number[]) {
