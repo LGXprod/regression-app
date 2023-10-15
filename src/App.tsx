@@ -5,6 +5,7 @@ import linearRegressor from "./utils/regressors/native/linearRegressor";
 // import init, { linear_regressor as rustLinearRegressor } from "regressor-rs";
 import { useEffect, useState } from "react";
 import PolynomialRegressor from "./utils/regressors/native/polynomialRegressor";
+import CartRegressor from "./utils/regressors/native/cartRegressor";
 
 const defaultRandomArgs: [number, number, number] = [-100, 100, 500];
 
@@ -118,13 +119,8 @@ function App() {
           10000
         );
 
-        const {
-          equation,
-          normMean,
-          normStd,
-          loss,
-          trainingTime,
-        } = polynomialRegressor.gdFit();
+        const { equation, normMean, normStd, loss, trainingTime } =
+          polynomialRegressor.gdFit();
 
         setRegressionEquation(equation);
         setNorm({ mean: normMean, std: normStd });
@@ -141,6 +137,45 @@ function App() {
         setPredictions(predictions);
         setTestLossMetrics(testLoss);
         setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
+
+        break;
+      }
+
+      case "discrete": {
+        const { axisBounds: sampleBounds, ...randomSample } =
+          generateRandomSample(
+            ...defaultRandomArgs,
+            trainPercantage,
+            "discrete"
+          );
+        setRandomSample(randomSample);
+
+        const axisBounds = sampleBounds;
+        axisBounds.mins.y = -0.5;
+        axisBounds.maxs.y = 1.5;
+        setAxisBounds(axisBounds);
+
+        try {
+          const cartRegressor = new CartRegressor(randomSample.trainingSet, 50);
+          const trainingTime = cartRegressor.build_tree();
+
+          setRegressionEquation("Discrete");
+          setNorm(null);
+          setTrainLoss(null);
+
+          const {
+            predictions,
+            axisBounds: predictionBounds,
+            inferenceTime,
+            testLoss,
+          } = cartRegressor.predictSamples(randomSample.testSet);
+
+          setExecutionTime({ trainingTime, inferenceTime });
+          setPredictions(predictions);
+          setTestLossMetrics(testLoss);
+        } catch (e) {
+          console.log("err:", e);
+        }
 
         break;
       }
@@ -186,7 +221,8 @@ function App() {
         >
           <option value="linear">Linear Data</option>
           <option value="polynomial">Polynomial Data</option>
-          <option value="non-linear">Non-linear Data</option>
+          <option value="discrete">Discrete Data</option>
+          <option value="piecewise">Piecewise Data</option>
           <option value="random">Random Data</option>
         </select>
 
@@ -252,8 +288,12 @@ function App() {
                   return `Polynomial Data (Degree ${polyDegree})`;
                 }
 
-                case "non-linear": {
-                  return "Non-linear Data";
+                case "discrete": {
+                  return "Discrete Data";
+                }
+
+                case "piecewise": {
+                  return "Piecewise Data";
                 }
 
                 case "random": {

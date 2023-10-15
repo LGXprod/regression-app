@@ -1,6 +1,7 @@
 import { FunctionType, Samples } from "../../types";
 import AxisBounds from "../chartConfig/AxisBounds";
 import { getRandomFloat, getRandomInteger } from "./randomNumbers";
+import DiscreteFunction from "./yFunctions/DiscreteFunction";
 import LinearFunction from "./yFunctions/LinearFunction";
 import PolynomialFunction from "./yFunctions/PolynomialFunction";
 
@@ -12,7 +13,7 @@ function generateRandomSample(
   function_type: FunctionType = "linear",
   degree: number = 2
 ) {
-  let yFunc: LinearFunction | PolynomialFunction;
+  let yFunc: LinearFunction | PolynomialFunction | DiscreteFunction;
 
   switch (function_type) {
     case "linear":
@@ -24,6 +25,9 @@ function generateRandomSample(
       break;
     case "polynomial":
       yFunc = new PolynomialFunction(degree, 200);
+      break;
+    case "discrete":
+      yFunc = new DiscreteFunction(5, min_val, max_val);
       break;
     default:
       yFunc = new LinearFunction(
