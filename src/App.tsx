@@ -202,12 +202,6 @@ function App() {
         <label>Javascript</label>
         <input
           type="radio"
-          checked={progLang === "Golang"}
-          onChange={() => setProgLang("Golang")}
-        />
-        <label>Golang</label>
-        <input
-          type="radio"
           checked={progLang === "Rust"}
           onChange={() => setProgLang("Rust")}
         />
