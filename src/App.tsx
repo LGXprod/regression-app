@@ -41,7 +41,6 @@ function App() {
   // menu state
   const [dataOption, setDataOption] = useState<FunctionType>("linear");
   const [polyDegree, setPolyDegree] = useState<number>(2);
-  const [progLang, setProgLang] = useState<ProgLang>("Javascript");
 
   // chart state
   const [randomSample, setRandomSample] = useState<{
@@ -194,19 +193,6 @@ function App() {
       </p>
 
       <div className="w-full flex items-center justify-center gap-4">
-        {/* <input
-          type="radio"
-          checked={progLang === "Javascript"}
-          onChange={() => setProgLang("Javascript")}
-        />
-        <label>Javascript</label>
-        <input
-          type="radio"
-          checked={progLang === "Rust"}
-          onChange={() => setProgLang("Rust")}
-        />
-        <label>Rust</label> */}
-
         <select
           className="border-2 rounded-md px-1 py-0.5 max-w-[150px]"
           onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
