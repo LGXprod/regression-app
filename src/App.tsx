@@ -1,8 +1,7 @@
 import generateRandomSample from "./utils/sampleData/generateRandomSample";
-import { AxisBounds, FunctionType, ProgLang, Samples } from "./types";
+import { AxisBounds, FunctionType, Samples } from "./types";
 import { Chart } from "react-chartjs-2";
 import linearRegressor from "./utils/regressors/native/linearRegressor";
-// import init, { linear_regressor as rustLinearRegressor } from "regressor-rs";
 import { useEffect, useState } from "react";
 import PolynomialRegressor from "./utils/regressors/native/polynomialRegressor";
 import CartRegressor from "./utils/regressors/native/cartRegressor";
@@ -404,27 +403,3 @@ function App() {
 }
 
 export default App;
-
-// init().then(() => {
-//   const rs_predictions = rustLinearRegressor(
-//     new Float64Array(randomSample.trainingSet.map(({ x }) => x)),
-//     new Float64Array(randomSample.trainingSet.map(({ y }) => y))
-//   );
-
-//   // console.log(
-//   //   "rust",
-//   //   rs_predictions.get_predictions()
-//   // );
-
-//   const preds = rs_predictions.get_predictions();
-//   const prediction_samples: Samples = [];
-
-//   preds.forEach((y, i) => {
-//     prediction_samples.push({
-//       x: randomSample.testSet[i].x,
-//       y,
-//     });
-//   });
-
-//   setPredictions(prediction_samples);
-// });
