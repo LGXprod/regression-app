@@ -194,7 +194,7 @@ function App() {
       </p>
 
       <div className="w-full flex items-center justify-center gap-4">
-        <input
+        {/* <input
           type="radio"
           checked={progLang === "Javascript"}
           onChange={() => setProgLang("Javascript")}
@@ -205,7 +205,7 @@ function App() {
           checked={progLang === "Rust"}
           onChange={() => setProgLang("Rust")}
         />
-        <label>Rust</label>
+        <label>Rust</label> */}
 
         <select
           className="border-2 rounded-md px-1 py-0.5 max-w-[150px]"
