@@ -1,4 +1,4 @@
-import { getRandomFloat } from "../randomNumbers";
+import { getRandomFloat } from "../../helpers/randomNumbers";
 import YFunction from "./YFunction";
 
 class LinearFunction implements YFunction {

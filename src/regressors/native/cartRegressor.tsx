@@ -1,6 +1,6 @@
-import { Samples } from "../../../types";
-import AxisBounds from "../../chartConfig/AxisBounds";
-import Loss from "./loss";
+import { Samples } from "../../types";
+import AxisBounds from "../../helpers/AxisBounds";
+import Loss from "../../helpers/Loss";
 
 class Node {
   num: number;

@@ -1,6 +1,3 @@
-import { simplify } from "mathjs";
-import { ComputeEngine } from "@cortex-js/compute-engine";
-
 class Equation {
   terms: { coefficient: number; exponent: number }[];
   independentVar: string;

@@ -1,6 +1,6 @@
-import { FunctionType, Samples } from "../../types";
-import AxisBounds from "../chartConfig/AxisBounds";
-import { getRandomFloat, getRandomInteger } from "./randomNumbers";
+import { FunctionType, Samples } from "../types";
+import AxisBounds from "../helpers/AxisBounds";
+import { getRandomFloat, getRandomInteger } from "../helpers/randomNumbers";
 import DiscreteFunction from "./yFunctions/DiscreteFunction";
 import LinearFunction from "./yFunctions/LinearFunction";
 import PolynomialFunction from "./yFunctions/PolynomialFunction";

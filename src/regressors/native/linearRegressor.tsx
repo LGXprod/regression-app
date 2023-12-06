@@ -1,7 +1,7 @@
-import { Samples } from "../../../types";
-import AxisBounds from "../../chartConfig/AxisBounds";
-import Equation from "../../chartConfig/Equation";
-import Loss from "./loss";
+import { Samples } from "../../types";
+import AxisBounds from "../../helpers/AxisBounds";
+import Equation from "../../helpers/Equation";
+import Loss from "../../helpers/Loss";
 
 function linearRegressor(trainSet: Samples, testSet: Samples) {
   const start_training_time = performance.now();

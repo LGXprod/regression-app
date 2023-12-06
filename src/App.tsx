@@ -1,10 +1,19 @@
-import generateRandomSample from "./utils/sampleData/generateRandomSample";
-import { AxisBounds, FunctionType, Samples } from "./types";
-import { Chart } from "react-chartjs-2";
-import linearRegressor from "./utils/regressors/native/linearRegressor";
 import { useEffect, useState } from "react";
-import PolynomialRegressor from "./utils/regressors/native/polynomialRegressor";
-import CartRegressor from "./utils/regressors/native/cartRegressor";
+
+import { Chart } from "react-chartjs-2";
+
+import { AxisBounds, Samples } from "./types";
+
+import { getAxisBounds } from "./helpers/AxisBounds";
+
+import Options from "./components/Options";
+
+import generateRandomSample from "./data-generators/generateRandomSample";
+
+import linearRegressor from "./regressors/native/linearRegressor";
+import PolynomialRegressor from "./regressors/native/polynomialRegressor";
+import CartRegressor from "./regressors/native/cartRegressor";
+import useMenuOptionsStore from "./stores/useMenuOptionsStore";
 
 const defaultRandomArgs: [number, number, number] = [-100, 100, 500];
 
@@ -20,26 +29,15 @@ const chartScaleOptions = {
   },
 };
 
-function getAxisBounds(
-  sampleAxisBounds: AxisBounds,
-  predictionsAxisBounds: AxisBounds
-) {
-  return {
-    mins: {
-      x: Math.min(sampleAxisBounds.mins.x, predictionsAxisBounds.mins.x),
-      y: Math.min(sampleAxisBounds.mins.y, predictionsAxisBounds.mins.y),
-    },
-    maxs: {
-      x: Math.max(sampleAxisBounds.maxs.x, predictionsAxisBounds.maxs.x),
-      y: Math.max(sampleAxisBounds.maxs.y, predictionsAxisBounds.maxs.y),
-    },
-  };
-}
-
-function App() {
-  // menu state
-  const [dataOption, setDataOption] = useState<FunctionType>("linear");
-  const [polyDegree, setPolyDegree] = useState<number>(2);
+const App = () => {
+  const { dataGeneratorType, modelType, polyDegree, trainPercentage } =
+    useMenuOptionsStore((state) => ({
+      dataGeneratorType: state.dataGeneratorType,
+      modelType: state.modelType,
+      polyDegree: state.polyDegree,
+      trainPercentage: state.trainPercentage,
+    }));
+  const [toggleRefresh, setToggleRefresh] = useState<boolean>(false);
 
   // chart state
   const [randomSample, setRandomSample] = useState<{
@@ -63,13 +61,11 @@ function App() {
     ev: number;
   }>();
   const [trainLoss, setTrainLoss] = useState<number | null>();
-  const [trainPercantage, setTrainPercentage] = useState<number>(80);
-  const [toggleRefresh, setToggleRefresh] = useState<boolean>(false);
 
   function updateLinearRegression() {
     const { axisBounds: sampleBounds, ...randomSample } = generateRandomSample(
       ...defaultRandomArgs,
-      trainPercantage
+      trainPercentage
     );
     const {
       predictions,
@@ -93,7 +89,7 @@ function App() {
   useEffect(() => updateLinearRegression, []);
 
   useEffect(() => {
-    switch (dataOption) {
+    switch (dataGeneratorType) {
       case "linear": {
         updateLinearRegression();
         break;
@@ -103,7 +99,7 @@ function App() {
         const { axisBounds: sampleBounds, ...randomSample } =
           generateRandomSample(
             ...defaultRandomArgs,
-            trainPercantage,
+            trainPercentage,
             "polynomial",
             polyDegree
           );
@@ -143,7 +139,7 @@ function App() {
         const { axisBounds: sampleBounds, ...randomSample } =
           generateRandomSample(
             ...defaultRandomArgs,
-            trainPercantage,
+            trainPercentage,
             "discrete"
           );
         setRandomSample(randomSample);
@@ -178,7 +174,7 @@ function App() {
         break;
       }
     }
-  }, [toggleRefresh, dataOption, polyDegree, trainPercantage]);
+  }, [toggleRefresh, dataGeneratorType, polyDegree, trainPercentage]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
@@ -191,74 +187,13 @@ function App() {
         yourself!
       </p>
 
-      <div className="w-full flex items-center justify-center gap-4">
-        <select
-          className="border-2 rounded-md px-1 py-0.5 max-w-[150px]"
-          onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-            setDataOption(e.target.value as FunctionType)
-          }
-        >
-          <option value="linear">Linear Data</option>
-          <option value="polynomial">Polynomial Data</option>
-          <option value="discrete">Discrete Data</option>
-          <option value="piecewise">Piecewise Data</option>
-          <option value="random">Random Data</option>
-        </select>
-
-        {dataOption === "polynomial" && (
-          <>
-            <label>Degree:</label>
-            <input
-              className="border-2 rounded-md max-w-[75px] px-1 py-0.5"
-              type="number"
-              defaultValue={2}
-              min={2}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setPolyDegree(parseInt(e.target.value))
-              }
-            />
-          </>
-        )}
-
-        <label>Train/Test Split:</label>
-
-        <input
-          className="w-[75px]"
-          placeholder="Train"
-          type="number"
-          min={20}
-          max={80}
-          value={trainPercantage}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setTrainPercentage(parseInt(e.target.value))
-          }
-        />
-        <label>/</label>
-        <input
-          className="w-[75px]"
-          placeholder="Test"
-          type="number"
-          min={20}
-          max={80}
-          value={Math.abs(100 - trainPercantage)}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setTrainPercentage(Math.abs(100 - parseInt(e.target.value)))
-          }
-        />
-
-        <button
-          className="bg-indigo-500 hover:bg-indigo-400 text-slate-50 py-2 px-4 rounded-md"
-          onClick={() => setToggleRefresh(!toggleRefresh)}
-        >
-          Refresh
-        </button>
-      </div>
+      <Options toggleRefresh={() => setToggleRefresh(!toggleRefresh)} />
 
       <div className="flex items-center justify-center gap-10 max-w-screen-2xl w-full h-full">
         <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl max-w-5xl w-full h-full">
           <h2 className="text-4xl text-center mb-4">
             {((): string => {
-              switch (dataOption) {
+              switch (dataGeneratorType) {
                 case "linear": {
                   return `Linear Regression`;
                 }
@@ -331,7 +266,7 @@ function App() {
                     },
                     {
                       label:
-                        dataOption === "polynomial"
+                        dataGeneratorType === "polynomial"
                           ? "Polynomial Regression"
                           : "Linear Regression",
                       data: predictions,
@@ -400,6 +335,6 @@ function App() {
       </div>
     </div>
   );
-}
+};
 
 export default App;

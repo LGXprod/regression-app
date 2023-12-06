@@ -2,7 +2,7 @@ class AxisBounds {
   mins: { x: number; y: number };
   maxs: { x: number; y: number };
 
-  constructor () {
+  constructor() {
     this.mins = { x: Infinity, y: Infinity };
     this.maxs = { x: -Infinity, y: -Infinity };
   }
@@ -26,4 +26,22 @@ class AxisBounds {
   }
 }
 
+function getAxisBounds(
+  sampleAxisBounds: AxisBounds,
+  predictionsAxisBounds: AxisBounds
+) {
+  return {
+    mins: {
+      x: Math.min(sampleAxisBounds.mins.x, predictionsAxisBounds.mins.x),
+      y: Math.min(sampleAxisBounds.mins.y, predictionsAxisBounds.mins.y),
+    },
+    maxs: {
+      x: Math.max(sampleAxisBounds.maxs.x, predictionsAxisBounds.maxs.x),
+      y: Math.max(sampleAxisBounds.maxs.y, predictionsAxisBounds.maxs.y),
+    },
+  };
+}
+
 export default AxisBounds;
+
+export { getAxisBounds };
