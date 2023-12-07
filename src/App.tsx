@@ -2,179 +2,70 @@ import { useEffect, useState } from "react";
 
 import { Chart } from "react-chartjs-2";
 
-import { AxisBounds, Samples } from "./types";
-
-import { getAxisBounds } from "./helpers/AxisBounds";
-
 import Options from "./components/Options";
 
 import generateRandomSample from "./data-generators/generateRandomSample";
 
-import linearRegressor from "./regressors/native/linearRegressor";
-import PolynomialRegressor from "./regressors/native/polynomialRegressor";
-import CartRegressor from "./regressors/native/cartRegressor";
+import { getAxisBounds } from "./helpers/AxisBounds";
+
+import { AxisBounds, Samples } from "./types";
+
 import useMenuOptionsStore from "./stores/useMenuOptionsStore";
-
-const defaultRandomArgs: [number, number, number] = [-100, 100, 500];
-
-const chartScaleOptions = {
-  grid: {
-    display: false,
-  },
-  border: {
-    display: false,
-  },
-  ticks: {
-    color: "#EEEEEE",
-  },
-};
+import useSampleDataStore from "./stores/useSampleDataStore";
+import getPredictions from "./helpers/getPredictions";
+import useRegressionOutputStore from "./stores/useRegressionStore";
+import RegressionChart from "./components/RegressionChart";
 
 const App = () => {
-  const { dataGeneratorType, modelType, polyDegree, trainPercentage } =
+  const { dataGeneratorType, polyDegree, modelType, trainPercentage } =
     useMenuOptionsStore((state) => ({
       dataGeneratorType: state.dataGeneratorType,
       modelType: state.modelType,
       polyDegree: state.polyDegree,
       trainPercentage: state.trainPercentage,
     }));
+  const { dataGenerationEquation } = useSampleDataStore((state) => ({
+    dataGenerationEquation: state.sampleData?.dataGenerationEquation,
+  }));
+  const { regressionEquation } = useRegressionOutputStore((state) => ({
+    regressionEquation: state.regressionOutput?.regressionEquation,
+  }));
+
+  const updateSampleData = useSampleDataStore(
+    (state) => state.updateSampleData
+  );
+  const updateRegressionOutput = useRegressionOutputStore(
+    (state) => state.updateRegressionOutput
+  );
+
   const [toggleRefresh, setToggleRefresh] = useState<boolean>(false);
 
-  // chart state
-  const [randomSample, setRandomSample] = useState<{
-    trainingSet: Samples;
-    testSet: Samples;
-    equation: string;
-  }>();
-  const [axisBounds, setAxisBounds] = useState<AxisBounds>();
-  const [executionTime, setExecutionTime] = useState<{
-    trainingTime: number;
-    inferenceTime: number;
-  }>();
-  const [regressionEquation, setRegressionEquation] = useState<string>();
-  const [norm, setNorm] = useState<{ mean: number; std: number } | null>();
-  const [predictions, setPredictions] = useState<Samples>();
-  const [testLossMetrics, setTestLossMetrics] = useState<{
-    mae: number;
-    mse: number;
-    rmsle: number;
-    r2score: number;
-    ev: number;
-  }>();
-  const [trainLoss, setTrainLoss] = useState<number | null>();
-
-  function updateLinearRegression() {
-    const { axisBounds: sampleBounds, ...randomSample } = generateRandomSample(
-      ...defaultRandomArgs,
-      trainPercentage
-    );
-    const {
-      predictions,
-      regressionEquation,
-      axisBounds: predictionBounds,
-      trainingTime,
-      inferenceTime,
-      testLoss,
-    } = linearRegressor(randomSample.trainingSet, randomSample.testSet);
-
-    setRandomSample(randomSample);
-    setExecutionTime({ trainingTime, inferenceTime });
-    setRegressionEquation(regressionEquation);
-    setNorm(null);
-    setPredictions(predictions);
-    setTrainLoss(null);
-    setTestLossMetrics(testLoss);
-    setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
-  }
-
-  useEffect(() => updateLinearRegression, []);
-
   useEffect(() => {
-    switch (dataGeneratorType) {
-      case "linear": {
-        updateLinearRegression();
-        break;
-      }
+    const sampleData = generateRandomSample(
+      trainPercentage,
+      dataGeneratorType,
+      polyDegree
+    );
 
-      case "polynomial": {
-        const { axisBounds: sampleBounds, ...randomSample } =
-          generateRandomSample(
-            ...defaultRandomArgs,
-            trainPercentage,
-            "polynomial",
-            polyDegree
-          );
+    updateSampleData(sampleData);
 
-        setRandomSample(randomSample);
+    const { trainSet, testSet } = sampleData;
 
-        const polynomialRegressor = new PolynomialRegressor(
-          randomSample.trainingSet,
-          polyDegree,
-          0.001,
-          10000
-        );
+    const regressionOutput = getPredictions(
+      trainSet,
+      testSet,
+      modelType,
+      polyDegree
+    );
 
-        const { equation, normMean, normStd, loss, trainingTime } =
-          polynomialRegressor.gdFit();
-
-        setRegressionEquation(equation);
-        setNorm({ mean: normMean, std: normStd });
-        setTrainLoss(Math.round(loss * 100) / 100);
-
-        const {
-          predictions,
-          axisBounds: predictionBounds,
-          inferenceTime,
-          testLoss,
-        } = polynomialRegressor.predictSamples(randomSample.testSet);
-
-        setExecutionTime({ trainingTime, inferenceTime });
-        setPredictions(predictions);
-        setTestLossMetrics(testLoss);
-        setAxisBounds(getAxisBounds(sampleBounds, predictionBounds));
-
-        break;
-      }
-
-      case "discrete": {
-        const { axisBounds: sampleBounds, ...randomSample } =
-          generateRandomSample(
-            ...defaultRandomArgs,
-            trainPercentage,
-            "discrete"
-          );
-        setRandomSample(randomSample);
-
-        const axisBounds = sampleBounds;
-        axisBounds.mins.y = -0.5;
-        axisBounds.maxs.y = 1.5;
-        setAxisBounds(axisBounds);
-
-        try {
-          const cartRegressor = new CartRegressor(randomSample.trainingSet, 50);
-          const trainingTime = cartRegressor.build_tree();
-
-          setRegressionEquation("Discrete");
-          setNorm(null);
-          setTrainLoss(null);
-
-          const {
-            predictions,
-            axisBounds: predictionBounds,
-            inferenceTime,
-            testLoss,
-          } = cartRegressor.predictSamples(randomSample.testSet);
-
-          setExecutionTime({ trainingTime, inferenceTime });
-          setPredictions(predictions);
-          setTestLossMetrics(testLoss);
-        } catch (e) {
-          console.log("err:", e);
-        }
-
-        break;
-      }
-    }
-  }, [toggleRefresh, dataGeneratorType, polyDegree, trainPercentage]);
+    updateRegressionOutput(regressionOutput);
+  }, [
+    toggleRefresh,
+    dataGeneratorType,
+    polyDegree,
+    modelType,
+    trainPercentage,
+  ]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
@@ -193,102 +84,32 @@ const App = () => {
         <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl max-w-5xl w-full h-full">
           <h2 className="text-4xl text-center mb-4">
             {((): string => {
-              switch (dataGeneratorType) {
-                case "linear": {
+              switch (modelType) {
+                case "linear-regression": {
                   return `Linear Regression`;
                 }
 
-                case "polynomial": {
-                  return `Polynomial Data (Degree ${polyDegree})`;
+                case "polynomial-regression": {
+                  return `Polynomial Regression (Degree: ${polyDegree})`;
                 }
 
-                case "discrete": {
-                  return "Discrete Data";
-                }
-
-                case "piecewise": {
-                  return "Piecewise Data";
-                }
-
-                case "random": {
-                  return "Random Data";
+                case "cart": {
+                  return "CART Regression";
                 }
               }
             })()}
           </h2>
 
-          <h3 className="text-center text-xl">
-            {`${regressionEquation}`}
-            {norm && ` | Z(x) = (x - (${norm.mean})) / ${norm.std}`}
+          <h3 className="text-center text-xl">{regressionEquation}</h3>
+
+          <RegressionChart />
+
+          <h3 className="text-xl text-center mt-4">
+            Data modelled using: {dataGenerationEquation}
           </h3>
-
-          {randomSample && axisBounds && predictions && (
-            <>
-              <Chart
-                type="scatter"
-                options={{
-                  scales: {
-                    x: {
-                      min: axisBounds.mins.x,
-                      max: axisBounds.maxs.x,
-                      title: {
-                        text: "X Samples",
-                        display: true,
-                        color: "#EEEEEE",
-                      },
-                      ...chartScaleOptions,
-                    },
-                    y: {
-                      min: axisBounds.mins.y,
-                      max: axisBounds.maxs.y,
-                      title: {
-                        text: "Y = F(X)",
-                        display: true,
-                        color: "#EEEEEE",
-                      },
-                      ...chartScaleOptions,
-                    },
-                  },
-                  plugins: {
-                    legend: {
-                      labels: {
-                        color: "#EEEEEE",
-                      },
-                    },
-                  },
-                }}
-                data={{
-                  datasets: [
-                    {
-                      label: "Random Samples",
-                      data: randomSample.testSet,
-                      backgroundColor: "#48BFE3",
-                    },
-                    {
-                      label:
-                        dataGeneratorType === "polynomial"
-                          ? "Polynomial Regression"
-                          : "Linear Regression",
-                      data: predictions,
-                      backgroundColor: "#F72585",
-                      tension: 0.4,
-                      borderColor: "#F72585",
-                      borderWidth: 4,
-                      type: "line" as const,
-                      pointRadius: 0,
-                    },
-                  ],
-                }}
-              />
-
-              <h3 className="text-xl text-center mt-4">
-                Data modelled using: {randomSample.equation}
-              </h3>
-            </>
-          )}
         </div>
 
-        <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl">
+        {/* <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl">
           <h2 className="text-4xl text-center mb-4">Regression Metrics</h2>
 
           <h3 className="text-xl mt-4 mb-2">Training Metrics</h3>
@@ -331,7 +152,7 @@ const App = () => {
               </p>
             )}
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

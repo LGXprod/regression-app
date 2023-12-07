@@ -5,10 +5,9 @@ import DiscreteFunction from "./yFunctions/DiscreteFunction";
 import LinearFunction from "./yFunctions/LinearFunction";
 import PolynomialFunction from "./yFunctions/PolynomialFunction";
 
+const [min_val, max_val, num_samples] = [-100, 100, 500];
+
 function generateRandomSample(
-  min_val: number,
-  max_val: number,
-  num_samples: number,
   trainingPercentage: number,
   function_type: FunctionType = "linear",
   degree: number = 2
@@ -71,9 +70,9 @@ function generateRandomSample(
   testSet.sort((a, b) => a.x - b.x);
 
   return {
-    trainingSet: samples,
+    trainSet: samples,
     testSet,
-    equation: yFunc.toString(),
+    dataGenerationEquation: yFunc.toString(),
     axisBounds: axisBounds.axisBounds,
   };
 }

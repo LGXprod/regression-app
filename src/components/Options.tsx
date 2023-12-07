@@ -5,6 +5,7 @@ const Options = ({ toggleRefresh }: { toggleRefresh: () => void }) => {
   const dataGeneratorType = useMenuOptionsStore(
     (state) => state.dataGeneratorType
   );
+  const modelType = useMenuOptionsStore((state) => state.modelType);
   const trainPercantage = useMenuOptionsStore((state) => state.trainPercentage);
 
   const updateDataGeneratorType = useMenuOptionsStore(
@@ -37,12 +38,12 @@ const Options = ({ toggleRefresh }: { toggleRefresh: () => void }) => {
           updateModelType(e.target.value as ModelType)
         }
       >
-        <option value="linear">Linear Regression</option>
-        <option value="polynomial">Polynomial Regression</option>
-        <option value="discrete">CART Regression</option>
+        <option value="linear-regression">Linear Regression</option>
+        <option value="polynomial-regression">Polynomial Regression</option>
+        <option value="cart">CART Regression</option>
       </select>
 
-      {dataGeneratorType === "polynomial" && (
+      {modelType === "polynomial-regression" && (
         <>
           <label>Degree:</label>
           <input
@@ -50,9 +51,10 @@ const Options = ({ toggleRefresh }: { toggleRefresh: () => void }) => {
             type="number"
             defaultValue={2}
             min={2}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setPolyDegree(parseInt(e.target.value))
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+              if (e.target.value === "") return;
+              setPolyDegree(parseInt(e.target.value));
+            }}
           />
         </>
       )}
