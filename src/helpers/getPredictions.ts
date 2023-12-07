@@ -16,14 +16,17 @@ export default function getPredictions(
       axisBounds,
       trainingTime,
       inferenceTime,
+      testLoss,
     } = linearRegressor(trainSet, testSet);
 
     return {
       predictions,
       regressionEquation,
       axisBounds,
-      trainingTime,
+      trainTime: trainingTime,
       inferenceTime,
+      trainLoss: null,
+      testLoss,
     };
   }
 
@@ -35,24 +38,27 @@ export default function getPredictions(
       10000
     );
 
-    const { equation, normMean, normStd, trainingTime } =
-      polynomialRegressor.gdFit();
+    const {
+      equation,
+      normMean,
+      normStd,
+      trainingTime,
+      loss: trainLoss,
+    } = polynomialRegressor.gdFit();
 
     const regressionEquation = `${equation} | Z(x) = (x - (${normMean})) / ${normStd}`;
 
-    const {
-      predictions,
-      axisBounds,
-      inferenceTime,
-      // testLoss,
-    } = polynomialRegressor.predictSamples(testSet);
+    const { predictions, axisBounds, inferenceTime, testLoss } =
+      polynomialRegressor.predictSamples(testSet);
 
     return {
       predictions,
       regressionEquation,
       axisBounds,
-      trainingTime,
+      trainTime: trainingTime,
       inferenceTime,
+      trainLoss,
+      testLoss,
     };
   }
 
@@ -61,19 +67,17 @@ export default function getPredictions(
       const cartRegressor = new CartRegressor(trainSet, 50);
       const trainingTime = cartRegressor.build_tree();
 
-      const {
-        predictions,
-        axisBounds,
-        inferenceTime,
-        // testLoss,
-      } = cartRegressor.predictSamples(testSet);
+      const { predictions, axisBounds, inferenceTime, testLoss } =
+        cartRegressor.predictSamples(testSet);
 
       return {
         predictions,
         regressionEquation: "",
         axisBounds,
-        trainingTime,
+        trainTime: trainingTime,
         inferenceTime,
+        trainLoss: null,
+        testLoss,
       };
     } catch (e) {
       console.log("err:", e);

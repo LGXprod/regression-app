@@ -27,9 +27,14 @@ const App = () => {
   const { dataGenerationEquation } = useSampleDataStore((state) => ({
     dataGenerationEquation: state.sampleData?.dataGenerationEquation,
   }));
-  const { regressionEquation } = useRegressionOutputStore((state) => ({
-    regressionEquation: state.regressionOutput?.regressionEquation,
-  }));
+  const { regressionEquation, trainTime, inferenceTime, trainLoss, testLoss } =
+    useRegressionOutputStore((state) => ({
+      regressionEquation: state.regressionOutput?.regressionEquation,
+      trainTime: state.regressionOutput?.trainTime,
+      inferenceTime: state.regressionOutput?.inferenceTime,
+      trainLoss: state.regressionOutput?.trainLoss,
+      testLoss: state.regressionOutput?.testLoss,
+    }));
 
   const updateSampleData = useSampleDataStore(
     (state) => state.updateSampleData
@@ -109,50 +114,41 @@ const App = () => {
           </h3>
         </div>
 
-        {/* <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl">
-          <h2 className="text-4xl text-center mb-4">Regression Metrics</h2>
+        {testLoss && trainTime && inferenceTime && (
+          <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl">
+            <h2 className="text-4xl text-center mb-4">Regression Metrics</h2>
 
-          <h3 className="text-xl mt-4 mb-2">Training Metrics</h3>
+            <h3 className="text-xl mt-4 mb-2">Training Metrics</h3>
 
-          <div className="grid grid-cols-2 gap-x-4">
-            <p>MSE Loss: {trainLoss ? trainLoss : "NA"}</p>
+            <div className="grid grid-cols-2 gap-x-4">
+              {trainLoss && <p>Train Loss: {trainLoss}</p>}
 
-            {executionTime && (
+              <p>
+                Execution Time: {trainTime > 0.01 ? trainTime : "≤ 0.01"} ms
+              </p>
+            </div>
+
+            <hr className="mt-4" />
+
+            <h3 className="text-xl mt-4 mb-2">Testing Metrics</h3>
+
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+              <p>MAE Loss: {testLoss.mae}</p>
+              <p>
+                R<sup>2</sup> Score: {testLoss.r2score}
+              </p>
+  
+              <p>MSE Loss: {testLoss.mse}</p>
+              <p>RMSLE Loss: {testLoss.rmsle}</p>
+  
+              <p>EV: {testLoss.ev}</p>
               <p>
                 Execution Time:{" "}
-                {executionTime.trainingTime > 0.01
-                  ? executionTime.trainingTime
-                  : "≤ 0.01"}{" "}
-                ms
+                {inferenceTime > 0.01 ? inferenceTime : "≤ 0.01"} ms
               </p>
-            )}
+            </div>
           </div>
-
-          <hr className="mt-4" />
-
-          <h3 className="text-xl mt-4 mb-2">Testing Metrics</h3>
-
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-            <p>MAE Loss: {testLossMetrics && testLossMetrics.mae}</p>
-            <p>
-              R<sup>2</sup> Score: {testLossMetrics && testLossMetrics.r2score}
-            </p>
-
-            <p>MSE Loss: {testLossMetrics && testLossMetrics.mse}</p>
-            <p>RMSLE Loss: {testLossMetrics && testLossMetrics.rmsle}</p>
-
-            <p>EV: {testLossMetrics && testLossMetrics.ev}</p>
-            {executionTime && (
-              <p>
-                Execution Time:{" "}
-                {executionTime.inferenceTime > 0.01
-                  ? executionTime.inferenceTime
-                  : "≤ 0.01"}{" "}
-                ms
-              </p>
-            )}
-          </div>
-        </div> */}
+        )}
       </div>
     </div>
   );
