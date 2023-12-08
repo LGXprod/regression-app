@@ -65,9 +65,9 @@ const Options = ({ toggleRefresh }: { toggleRefresh: () => void }) => {
   );
 
   return (
-    <div className="w-full flex items-center justify-center gap-4">
+    <div className="w-full flex items-center justify-center gap-4 max-md:flex-wrap">
       <select
-        className="border-2 rounded-md px-1 py-0.5 max-w-[150px]"
+        className="border-2 rounded-md px-1 py-0.5 min-w-[115px] max-w-[150px]"
         onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
           updateDataGeneratorType(e.target.value as FunctionType)
         }
@@ -81,7 +81,7 @@ const Options = ({ toggleRefresh }: { toggleRefresh: () => void }) => {
       </select>
 
       <select
-        className="border-2 rounded-md px-1 py-0.5 max-w-[200px]"
+        className="border-2 rounded-md px-1 py-0.5 min-w-[165px] max-w-[200px]"
         onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
           updateModelType(e.target.value as ModelType)
         }

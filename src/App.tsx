@@ -1,14 +1,8 @@
 import { useEffect, useState } from "react";
 
-import { Chart } from "react-chartjs-2";
-
 import Options from "./components/Options";
 
 import generateRandomSample from "./data-generators/generateRandomSample";
-
-import { getAxisBounds } from "./helpers/AxisBounds";
-
-import { AxisBounds, Samples } from "./types";
 
 import useMenuOptionsStore from "./stores/useMenuOptionsStore";
 import useSampleDataStore from "./stores/useSampleDataStore";
@@ -119,7 +113,7 @@ const App = () => {
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
-      <h1 className="text-6xl">Regression ML 📈</h1>
+      <h1 className="text-6xl text-center">Regression ML 📈</h1>
       <p className="text-center max-w-7xl">
         Are you struggling to make sense of your data? Look no further than
         Regression ML! Our advanced algorithms make it simple to model your data
@@ -130,7 +124,7 @@ const App = () => {
 
       <Options toggleRefresh={() => setToggleRefresh(!toggleRefresh)} />
 
-      <div className="flex items-center justify-center gap-10 max-w-screen-2xl w-full h-full">
+      <div className="flex items-center justify-center gap-10 max-w-screen-2xl w-full h-full max-[1360px]:flex-col">
         <div className="bg-zinc-800 rounded-2xl p-8 drop-shadow-2xl max-w-5xl w-full h-full">
           <h2 className="text-4xl text-center mb-4">
             {((): string => {

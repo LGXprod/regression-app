@@ -25,7 +25,7 @@ const RegressionChart = () => {
   );
 
   return (
-    <>
+    <div className="w-full min-h-[300px] h-[480px]">
       {sampleData && regressionOutput && (
         <Chart
           type="scatter"
@@ -59,6 +59,8 @@ const RegressionChart = () => {
                 },
               },
             },
+            responsive: true,
+            maintainAspectRatio: false,
           }}
           data={{
             datasets: [
@@ -81,7 +83,7 @@ const RegressionChart = () => {
           }}
         />
       )}
-    </>
+    </div>
   );
 };
 
