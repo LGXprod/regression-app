@@ -24,8 +24,10 @@ const App = () => {
       polyDegree: state.polyDegree,
       trainPercentage: state.trainPercentage,
     }));
-  const { dataGenerationEquation } = useSampleDataStore((state) => ({
+  const { dataGenerationEquation, trainSet, testSet } = useSampleDataStore((state) => ({
     dataGenerationEquation: state.sampleData?.dataGenerationEquation,
+    trainSet: state.sampleData?.trainSet,
+    testSet: state.sampleData?.testSet,
   }));
   const { regressionEquation, trainTime, inferenceTime, trainLoss, testLoss } =
     useRegressionOutputStore((state) => ({
@@ -46,24 +48,26 @@ const App = () => {
   const [toggleRefresh, setToggleRefresh] = useState<boolean>(false);
 
   useEffect(() => {
-    const sampleData = generateRandomSample(
-      trainPercentage,
-      dataGeneratorType,
-      polyDegree
-    );
+    if (dataGeneratorType !== "custom-upload") {
+      const sampleData = generateRandomSample(
+        trainPercentage,
+        dataGeneratorType,
+        polyDegree
+      );
 
-    updateSampleData(sampleData);
+      updateSampleData(sampleData);
 
-    const { trainSet, testSet } = sampleData;
+      const { trainSet, testSet } = sampleData;
 
-    const regressionOutput = getPredictions(
-      trainSet,
-      testSet,
-      modelType,
-      polyDegree
-    );
+      const regressionOutput = getPredictions(
+        trainSet,
+        testSet,
+        modelType,
+        polyDegree
+      );
 
-    updateRegressionOutput(regressionOutput);
+      updateRegressionOutput(regressionOutput);
+    }
   }, [
     toggleRefresh,
     dataGeneratorType,
@@ -71,6 +75,19 @@ const App = () => {
     modelType,
     trainPercentage,
   ]);
+
+  useEffect(() => {
+    if (dataGeneratorType === "custom-upload" && trainSet && testSet) {
+      const regressionOutput = getPredictions(
+        trainSet,
+        testSet,
+        modelType,
+        polyDegree
+      );
+
+      updateRegressionOutput(regressionOutput);
+    }
+  }, [dataGeneratorType, trainSet, testSet]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
@@ -137,10 +154,10 @@ const App = () => {
               <p>
                 R<sup>2</sup> Score: {testLoss.r2score}
               </p>
-  
+
               <p>MSE Loss: {testLoss.mse}</p>
               <p>RMSLE Loss: {testLoss.rmsle}</p>
-  
+
               <p>EV: {testLoss.ev}</p>
               <p>
                 Execution Time:{" "}

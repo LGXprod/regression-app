@@ -3,13 +3,13 @@ export type FunctionType =
   | "polynomial"
   | "discrete"
   | "piecewise"
-  | "random";
+  | "custom-upload";
 
 export type ModelType = "linear-regression" | "polynomial-regression" | "cart";
 
 export type Samples = { x: number; y: number }[];
 
-export type AxisBounds = {
+export type AxisBoundsType = {
   mins: { x: number; y: number };
   maxs: { x: number; y: number };
 };
@@ -17,7 +17,7 @@ export type AxisBounds = {
 export type RegressionOutput = {
   predictions: Samples;
   regressionEquation: string;
-  axisBounds: AxisBounds;
+  axisBounds: AxisBoundsType;
   trainTime: number;
   inferenceTime: number;
   trainLoss: number | null;

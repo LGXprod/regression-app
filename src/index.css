@@ -22,13 +22,13 @@ option {
   @apply bg-slate-50 border-r-2 max-w-[500px] w-full;
 }
 
-input {
+input[type=text], input[type=number] {
   color: #222831;
   outline: none;
   border-color: #393e46;
   @apply bg-slate-50 border-2 rounded-md max-w-[75px] px-1 py-0.5;
 }
 
-input:focus {
+input[type=text]:focus, input[type=number]:focus {
   border-color: #00adb5;
 }

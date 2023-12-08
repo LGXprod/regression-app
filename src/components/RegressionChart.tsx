@@ -20,7 +20,9 @@ const RegressionChart = () => {
     (state) => state.dataGeneratorType
   );
   const sampleData = useSampleDataStore((state) => state.sampleData);
-  const regressionOutput = useRegressionOutputStore((state) => state.regressionOutput);
+  const regressionOutput = useRegressionOutputStore(
+    (state) => state.regressionOutput
+  );
 
   return (
     <>

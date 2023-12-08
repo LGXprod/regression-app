@@ -1,11 +1,11 @@
 import { create } from "zustand";
-import { AxisBounds, Samples } from "../types";
+import { AxisBoundsType, Samples } from "../types";
 
 type State = {
   sampleData: {
     trainSet: Samples;
     testSet: Samples;
-    axisBounds: AxisBounds;
+    axisBounds: AxisBoundsType;
     dataGenerationEquation: string;
   } | null;
 };
