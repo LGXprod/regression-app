@@ -24,11 +24,13 @@ const App = () => {
       polyDegree: state.polyDegree,
       trainPercentage: state.trainPercentage,
     }));
-  const { dataGenerationEquation, trainSet, testSet } = useSampleDataStore((state) => ({
-    dataGenerationEquation: state.sampleData?.dataGenerationEquation,
-    trainSet: state.sampleData?.trainSet,
-    testSet: state.sampleData?.testSet,
-  }));
+  const { dataGenerationEquation, trainSet, testSet } = useSampleDataStore(
+    (state) => ({
+      dataGenerationEquation: state.sampleData?.dataGenerationEquation,
+      trainSet: state.sampleData?.trainSet,
+      testSet: state.sampleData?.testSet,
+    })
+  );
   const { regressionEquation, trainTime, inferenceTime, trainLoss, testLoss } =
     useRegressionOutputStore((state) => ({
       regressionEquation: state.regressionOutput?.regressionEquation,
@@ -67,6 +69,17 @@ const App = () => {
       );
 
       updateRegressionOutput(regressionOutput);
+    } else {
+      if (trainSet && testSet) {
+        const regressionOutput = getPredictions(
+          trainSet,
+          testSet,
+          modelType,
+          polyDegree
+        );
+
+        updateRegressionOutput(regressionOutput);
+      }
     }
   }, [
     toggleRefresh,
@@ -77,17 +90,32 @@ const App = () => {
   ]);
 
   useEffect(() => {
-    if (dataGeneratorType === "custom-upload" && trainSet && testSet) {
-      const regressionOutput = getPredictions(
-        trainSet,
-        testSet,
-        modelType,
-        polyDegree
-      );
+    if (dataGeneratorType === "custom-upload") {
+      if (trainSet && testSet) {
+        const regressionOutput = getPredictions(
+          trainSet,
+          testSet,
+          modelType,
+          polyDegree
+        );
 
-      updateRegressionOutput(regressionOutput);
+        updateRegressionOutput(regressionOutput);
+      }
     }
   }, [dataGeneratorType, trainSet, testSet]);
+
+  // useEffect(() => {
+  //   if (dataGeneratorType === "custom-upload" && trainSet && testSet) {
+  //     const regressionOutput = getPredictions(
+  //       trainSet,
+  //       testSet,
+  //       modelType,
+  //       polyDegree
+  //     );
+
+  //     updateRegressionOutput(regressionOutput);
+  //   }
+  // }, [dataGeneratorType, trainSet, testSet]);
 
   return (
     <div className="flex flex-col items-center justify-center gap-8 p-8 mx-auto">
